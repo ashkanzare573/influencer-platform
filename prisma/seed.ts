@@ -3,27 +3,22 @@ import bcrypt from "bcryptjs";
 
 async function main() {
   try {
-    // Check if demo user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: "ashkan@example.com" },
-    });
-
-    if (existingUser) {
-      console.log("Demo user already exists");
-      return;
-    }
-
-    // Create demo user
+    // demo user
     const hashedPassword = await bcrypt.hash("password123", 10);
-    const user = await prisma.user.create({
-      data: {
+    const user = await prisma.user.upsert({
+      where: { email: "ashkan@example.com" },
+      update: {
+        password: hashedPassword,
+        name: "Ashkan",
+      },
+      create: {
         email: "ashkan@example.com",
         password: hashedPassword,
-        name: "Demo User",
+        name: "Ashkan",
       },
     });
 
-    console.log("Demo user created successfully:", user.email);
+    console.log("Demo user created/updated successfully:", user.email, "- Name:", user.name);
   } catch (error) {
     console.error("Error seeding database:", error);
     throw error;

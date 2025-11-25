@@ -33,9 +33,11 @@ export function InfluencerCard({
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-200">
       {/* Header with avatar placeholder */}
       <div className="h-48 bg-linear-to-br from-blue-400 to-purple-500 flex items-center justify-center">
-        <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-purple-600">
-          {influencer.name.charAt(0)}
-        </div>
+        <img
+          src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${influencer.id}`}
+          alt={influencer.name}
+          className="w-20 h-20 bg-white rounded-full"
+        />
       </div>
 
       {/* Content */}
@@ -62,17 +64,17 @@ export function InfluencerCard({
         {/* Topics */}
         <div className="mb-4">
           <div className="flex flex-wrap gap-1">
-            {influencer.topics.slice(0, 2).map((topic) => (
+            {influencer.topics.slice(0, 3).map((topic, index) => (
               <span
-                key={topic}
+                key={`${topic}-${index}`}
                 className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
               >
                 {topic}
               </span>
             ))}
-            {influencer.topics.length > 2 && (
+            {influencer.topics.length > 3 && (
               <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                +{influencer.topics.length - 2}
+                +{influencer.topics.length - 3}
               </span>
             )}
           </div>

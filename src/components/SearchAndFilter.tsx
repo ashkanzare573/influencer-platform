@@ -1,5 +1,8 @@
 "use client";
 
+import { useState } from "react";
+import { ChevronDown } from "./ChevronDown";
+
 interface SearchAndFilterProps {
   search: string;
   onSearchChange: (value: string) => void;
@@ -29,6 +32,10 @@ export function SearchAndFilter({
   genders,
   isLoading,
 }: SearchAndFilterProps) {
+  const [topicOpen, setTopicOpen] = useState(false);
+  const [platformOpen, setPlatformOpen] = useState(false);
+  const [genderOpen, setGenderOpen] = useState(false);
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6 space-y-4 mb-6">
       {/* Search */}
@@ -42,7 +49,7 @@ export function SearchAndFilter({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           disabled={isLoading}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
@@ -53,19 +60,30 @@ export function SearchAndFilter({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Topic
           </label>
-          <select
-            value={selectedTopic}
-            onChange={(e) => onTopicChange(e.target.value)}
-            disabled={isLoading}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-          >
-            <option value="">All Topics</option>
-            {topics.map((topic) => (
-              <option key={topic} value={topic}>
-                {topic}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={selectedTopic}
+              onChange={(e) => {
+                onTopicChange(e.target.value);
+                setTopicOpen(false);
+              }}
+              onMouseDown={() => setTopicOpen(!topicOpen)}
+              onBlur={() => setTopicOpen(false)}
+              disabled={isLoading}
+              className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-50 appearance-none bg-white cursor-pointer"
+            >
+              <option value="">All Topics</option>
+              {topics.map((topic) => (
+                <option key={topic} value={topic}>
+                  {topic}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              isOpen={topicOpen}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+            />
+          </div>
         </div>
 
         {/* Platform Filter */}
@@ -73,19 +91,30 @@ export function SearchAndFilter({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Platform
           </label>
-          <select
-            value={selectedPlatform}
-            onChange={(e) => onPlatformChange(e.target.value)}
-            disabled={isLoading}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-          >
-            <option value="">All Platforms</option>
-            {platforms.map((platform) => (
-              <option key={platform} value={platform}>
-                {platform}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={selectedPlatform}
+              onChange={(e) => {
+                onPlatformChange(e.target.value);
+                setPlatformOpen(false);
+              }}
+              onMouseDown={() => setPlatformOpen(!platformOpen)}
+              onBlur={() => setPlatformOpen(false)}
+              disabled={isLoading}
+              className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white cursor-pointer"
+            >
+              <option value="">All Platforms</option>
+              {platforms.map((platform) => (
+                <option key={platform} value={platform}>
+                  {platform}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              isOpen={platformOpen}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+            />
+          </div>
         </div>
 
         {/* Gender Filter */}
@@ -93,19 +122,30 @@ export function SearchAndFilter({
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Gender
           </label>
-          <select
-            value={selectedGender}
-            onChange={(e) => onGenderChange(e.target.value)}
-            disabled={isLoading}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
-          >
-            <option value="">All Genders</option>
-            {genders.map((gender) => (
-              <option key={gender} value={gender}>
-                {gender.charAt(0).toUpperCase() + gender.slice(1)}
-              </option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={selectedGender}
+              onChange={(e) => {
+                onGenderChange(e.target.value);
+                setGenderOpen(false);
+              }}
+              onMouseDown={() => setGenderOpen(!genderOpen)}
+              onBlur={() => setGenderOpen(false)}
+              disabled={isLoading}
+              className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white cursor-pointer"
+            >
+              <option value="">All Genders</option>
+              {genders.map((gender) => (
+                <option key={gender} value={gender}>
+                  {gender.charAt(0).toUpperCase() + gender.slice(1)}
+                </option>
+              ))}
+            </select>
+            <ChevronDown
+              isOpen={genderOpen}
+              className="absolute right-3 top-1/2 -translate-y-1/2"
+            />
+          </div>
         </div>
       </div>
     </div>

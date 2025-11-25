@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const platform = searchParams.get("platform") || undefined;
     const gender = searchParams.get("gender") || undefined;
     const page = parseInt(searchParams.get("page") || "1", 10);
-    const pageSize = 10;
+    const pageSize = 12;
 
     const filtered = filterInfluencers({
       search,

@@ -22,14 +22,22 @@ export function InfluencerDetailModal({
   if (!isOpen || !influencer) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+    <div 
+      className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50 p-4"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="sticky top-0 bg-linear-to-r from-blue-500 to-purple-600 text-white p-6 flex items-start justify-between">
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-3xl font-bold text-purple-600">
-              {influencer.name.charAt(0)}
-            </div>
+            <img
+              src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${influencer.id}`}
+              alt={influencer.name}
+              className="w-16 h-16 bg-white rounded-full"
+            />
             <div>
               <h2 className="text-2xl font-bold">{influencer.name}</h2>
               <p className="text-blue-100 text-sm mt-1">{influencer.location}</p>
@@ -105,9 +113,9 @@ export function InfluencerDetailModal({
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-3">Topics & Interests</h3>
             <div className="flex flex-wrap gap-2">
-              {influencer.topics.map((topic) => (
+              {influencer.topics.map((topic, index) => (
                 <span
-                  key={topic}
+                  key={`${topic}-${index}`}
                   className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium"
                 >
                   {topic}
