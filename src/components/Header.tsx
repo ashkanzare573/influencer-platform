@@ -28,7 +28,7 @@ export function Header({
           {subtitle}
         </div>
         {rightContent ?? (
-          <div className="flex items-center max-sm:flex-col gap-4">
+          <div className="flex items-start sm:items-center max-sm:flex-col gap-4">
             <Link
               href="/favorites"
               className="px-4 py-2 bg-white/20 hover:bg-white/30 max-sm:text-sm rounded-lg transition-colors"
