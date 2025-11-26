@@ -50,10 +50,15 @@ A modern web application for discovering and managing influencer profiles. Built
    ```
 
 3. **Set up environment variables**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your configuration
+   > There is no `.env.example` file. You must create a `.env` file in the project root with the following content:
+
+   ```env
+   # .env example for Influencer Platform
+   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/influencer_platform
+   NEXTAUTH_SECRET=your-random-secret-here
+   NEXTAUTH_URL=http://localhost:3000
    ```
+   - Replace `your-random-secret-here` with a secure random string.
 
 4. **Start the database**
    ```bash
