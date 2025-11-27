@@ -50,7 +50,6 @@ model Influencer {
   avgComments     Int?
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
-  
   platforms       InfluencerPlatform[]
   topics          InfluencerTopic[]
   favorites       Favorite[]

@@ -1,20 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireSession } from "@/lib/session";
+import { requireUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { getInfluencerById } from "@/lib/influencers";
 
 export async function GET(request: NextRequest) {
   try {
-    const { session, response } = await requireSession();
+    const { user, response } = await requireUser();
     if (response) return response;
-
-    const user = await prisma.user.findUnique({
-      where: { email: session!.user!.email! },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
 
     const favorites = await prisma.favorite.findMany({
       where: { userId: user.id },
@@ -38,16 +30,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const { session, response } = await requireSession();
+    const { user, response } = await requireUser();
     if (response) return response;
-
-    const user = await prisma.user.findUnique({
-      where: { email: session!.user!.email! },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
 
     const { influencerId } = await request.json();
 

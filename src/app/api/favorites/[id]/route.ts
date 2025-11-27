@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireSession } from "@/lib/session";
+import { requireUser } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 
 export async function DELETE(
@@ -7,16 +7,8 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { session, response } = await requireSession();
+    const { user, response } = await requireUser();
     if (response) return response;
-
-    const user = await prisma.user.findUnique({
-      where: { email: session!.user!.email! },
-    });
-
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
 
     const { id } = await params;
 
