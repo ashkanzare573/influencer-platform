@@ -7,7 +7,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { session, response } = await requireSession();
+    const { response } = await requireSession();
     if (response) return response;
     
     const { id } = await params;

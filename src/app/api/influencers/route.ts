@@ -4,7 +4,7 @@ import { filterInfluencers, paginateResults } from "@/lib/influencers";
 
 export async function GET(request: NextRequest) {
   try {
-    const { session, response } = await requireSession();
+    const { response } = await requireSession();
     if (response) return response;
 
     const searchParams = request.nextUrl.searchParams;
