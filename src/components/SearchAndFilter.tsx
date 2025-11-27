@@ -49,7 +49,7 @@ export function SearchAndFilter({
           value={search}
           onChange={(e) => onSearchChange(e.target.value)}
           disabled={isLoading}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black placeholder:text-gray-500 placeholder:opacity-100"
         />
       </div>
 
@@ -70,7 +70,7 @@ export function SearchAndFilter({
               onMouseDown={() => setTopicOpen(!topicOpen)}
               onBlur={() => setTopicOpen(false)}
               disabled={isLoading}
-              className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-50 appearance-none bg-white cursor-pointer"
+              className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-50 appearance-none bg-white cursor-pointer text-black placeholder:text-gray-500 placeholder:opacity-100"
             >
               <option value="">All Topics</option>
               {topics.map((topic) => (
@@ -101,7 +101,7 @@ export function SearchAndFilter({
               onMouseDown={() => setPlatformOpen(!platformOpen)}
               onBlur={() => setPlatformOpen(false)}
               disabled={isLoading}
-              className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white cursor-pointer"
+              className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white cursor-pointer text-black placeholder:text-gray-500 placeholder:opacity-100"
             >
               <option value="">All Platforms</option>
               {platforms.map((platform) => (
@@ -132,7 +132,7 @@ export function SearchAndFilter({
               onMouseDown={() => setGenderOpen(!genderOpen)}
               onBlur={() => setGenderOpen(false)}
               disabled={isLoading}
-              className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white cursor-pointer"
+              className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none bg-white cursor-pointer text-black placeholder:text-gray-500 placeholder:opacity-100"
             >
               <option value="">All Genders</option>
               {genders.map((gender) => (
