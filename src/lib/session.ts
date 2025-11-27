@@ -4,7 +4,6 @@ import { NextResponse } from "next/server";
 
 /**
  * Get the current session or return an unauthorized response
- * Use this in API routes to avoid repetitive session checking
  */
 export async function requireSession() {
   const session = await getServerSession(authOptions);
@@ -24,7 +23,6 @@ export async function requireSession() {
 
 /**
  * Get the current session (without throwing error)
- * Use this in server components and pages
  */
 export async function getSession() {
   return await getServerSession(authOptions);
