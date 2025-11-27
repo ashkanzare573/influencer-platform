@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { FavoritesPageClient } from "@/components/FavoritesPageClient";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getAllInfluencers, Influencer } from "@/lib/influencers";
+import { InfluencerSummary } from "@/lib/influencers";
 
 export default async function FavoritesPage() {
   const session = await getServerSession(authOptions);
@@ -14,22 +14,57 @@ export default async function FavoritesPage() {
     redirect("/login");
   }
 
-  // Get user's favorites
+  // Get user's favorites from database with only summary data (optimized)
   const userEmail = session.user?.email;
-  let favorites: Influencer[] = [];
+  let favorites: InfluencerSummary[] = [];
   
   if (userEmail) {
     const user = await prisma.user.findUnique({ where: { email: userEmail } });
     if (user) {
       const favoriteRecords = await prisma.favorite.findMany({
         where: { userId: user.id },
-        select: { influencerId: true },
+        include: {
+          influencer: {
+            select: {
+              id: true,
+              name: true,
+              location: true,
+              followers: true,
+              engagementRate: true,
+              platforms: {
+                select: {
+                  platform: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
+              topics: {
+                select: {
+                  topic: {
+                    select: {
+                      name: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        orderBy: { createdAt: "desc" },
       });
-      const influencerIds = favoriteRecords.map((fav) => fav.influencerId);
       
-      // Get influencer data from JSON
-      const allInfluencers = getAllInfluencers();
-      favorites = allInfluencers.filter((inf) => influencerIds.includes(inf.id));
+      // Transform to InfluencerSummary format
+      favorites = favoriteRecords.map((fav) => ({
+        id: fav.influencer.id,
+        name: fav.influencer.name,
+        location: fav.influencer.location,
+        followers: fav.influencer.followers,
+        engagementRate: fav.influencer.engagementRate,
+        platform: fav.influencer.platforms.map((p) => p.platform.name),
+        topics: fav.influencer.topics.map((t) => t.topic.name),
+      }));
     }
   }
 

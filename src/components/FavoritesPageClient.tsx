@@ -1,22 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { Influencer } from "@/lib/influencers";
+import { Influencer, InfluencerSummary } from "@/lib/influencers";
 import { InfluencerCard } from "@/components/InfluencerCard";
-import { InfluencerDetailModal } from "@/components/InfluencerDetailModal";
+import InfluencerDetailModal from "@/components/InfluencerDetailModal";
 import Link from "next/link";
 
 interface FavoritesPageClientProps {
-  initialFavorites: Influencer[];
+  initialFavorites: InfluencerSummary[];
 }
 
 export function FavoritesPageClient({ initialFavorites }: FavoritesPageClientProps) {
-  const [favorites, setFavorites] = useState<Influencer[]>(initialFavorites);
+  const [favorites, setFavorites] = useState<InfluencerSummary[]>(initialFavorites);
   const [selectedInfluencer, setSelectedInfluencer] = useState<Influencer | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleRemoveFavorite = async (influencerId: string) => {
+    setIsLoading(true);
     try {
       const response = await fetch(`/api/favorites/${influencerId}`, {
         method: "DELETE",
@@ -24,18 +26,37 @@ export function FavoritesPageClient({ initialFavorites }: FavoritesPageClientPro
       if (response.ok) {
         setFavorites(favorites.filter((fav) => fav.id !== influencerId));
         if (selectedInfluencer?.id === influencerId) {
-          setSelectedInfluencer(null);
           setIsDetailModalOpen(false);
+          setSelectedInfluencer(null);
         }
       }
     } catch (error) {
       console.error("Error removing favorite:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleViewDetails = (influencer: Influencer) => {
-    setSelectedInfluencer(influencer);
+  const handleViewDetails = async (influencer: InfluencerSummary) => {
+    setIsDetailLoading(true);
     setIsDetailModalOpen(true);
+    try {
+      const response = await fetch(`/api/influencers/${influencer.id}`, {
+        credentials: "include",
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedInfluencer(data);
+      } else {
+        console.error("Failed to fetch influencer details:", response.status, response.statusText);
+        setSelectedInfluencer(null);
+      }
+    } catch (error) {
+      console.error("Error fetching influencer details:", error);
+      setSelectedInfluencer(null);
+    } finally {
+      setIsDetailLoading(false);
+    }
   };
 
   return (
@@ -85,7 +106,7 @@ export function FavoritesPageClient({ initialFavorites }: FavoritesPageClientPro
         }}
         isFavorited={selectedInfluencer ? favorites.some((fav) => fav.id === selectedInfluencer.id) : false}
         onFavoriteClick={handleRemoveFavorite}
-        isLoading={isLoading}
+        isLoading={isDetailLoading}
       />
     </>
   );

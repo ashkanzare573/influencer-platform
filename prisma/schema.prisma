@@ -19,29 +19,75 @@ model User {
 }
 
 model Favorite {
-  id            String    @id @default(cuid())
+  id            String      @id @default(cuid())
   userId        String
-  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   influencerId  String
-  createdAt     DateTime  @default(now())
+  influencer    Influencer  @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
   
   @@unique([userId, influencerId])
   @@index([userId])
+  @@index([influencerId])
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  NON_BINARY
 }
 
 model Influencer {
-  id              String   @id @default(cuid())
+  id              String                @id @default(cuid())
   name            String
-  email           String?  @unique
+  email           String?               @unique
   location        String?
   age             Int?
-  gender          String?
+  gender          Gender?
   followers       Int?
   engagementRate  Float?
   avgLikes        Int?
   avgComments     Int?
-  platform        String[]
-  topics          String[]
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  
+  platforms       InfluencerPlatform[]
+  topics          InfluencerTopic[]
+  favorites       Favorite[]
+  
+  @@index([gender])
+}
+
+model Platform {
+  id          String                @id @default(cuid())
+  name        String                @unique
+  influencers InfluencerPlatform[]
+}
+
+model Topic {
+  id          String             @id @default(cuid())
+  name        String             @unique
+  influencers InfluencerTopic[]
+}
+
+model InfluencerPlatform {
+  influencerId String
+  influencer   Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  platformId   String
+  platform     Platform   @relation(fields: [platformId], references: [id], onDelete: Cascade)
+  
+  @@id([influencerId, platformId])
+  @@index([influencerId])
+  @@index([platformId])
+}
+
+model InfluencerTopic {
+  influencerId String
+  influencer   Influencer @relation(fields: [influencerId], references: [id], onDelete: Cascade)
+  topicId      String
+  topic        Topic      @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  
+  @@id([influencerId, topicId])
+  @@index([influencerId])
+  @@index([topicId])
 }

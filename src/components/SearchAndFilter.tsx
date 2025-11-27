@@ -137,7 +137,7 @@ export function SearchAndFilter({
               <option value="">All Genders</option>
               {genders.map((gender) => (
                 <option key={gender} value={gender}>
-                  {gender.charAt(0).toUpperCase() + gender.slice(1)}
+                  {gender.charAt(0) + gender.slice(1).toLowerCase().replace('_', '-')}
                 </option>
               ))}
             </select>

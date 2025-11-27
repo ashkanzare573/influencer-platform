@@ -50,15 +50,17 @@ A modern web application for discovering and managing influencer profiles. Built
    ```
 
 3. **Set up environment variables**
-   > There is no `.env.example` file. You must create a `.env` file in the project root with the following content:
+   > Copy the example environment file and update the values as needed:
 
-   ```env
-   # .env example for Influencer Platform
-   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/influencer_platform
-   NEXTAUTH_SECRET=your-random-secret-here
-   NEXTAUTH_URL=http://localhost:3000
+   **On macOS/Linux:**
+   ```bash
+   cp .env.example .env
    ```
-   - Replace `your-random-secret-here` with a secure random string.
+   **On Windows (PowerShell):**
+   ```powershell
+   copy .env.example .env
+   ```
+   Then, open the new `.env` file and replace `your-random-secret-here` with a secure random string.
 
 4. **Start the database**
    ```bash
@@ -117,9 +119,13 @@ The application will be available at [http://localhost:3000](http://localhost:30
 
 ## Performance Optimizations
 
-- **Server-Side Pagination (SSR)**: The initial influencer list is rendered on the server using Next.js server components. This means the first page load is fully SSR, reducing data transfer and improving performance, especially for authenticated/protected content.
-- **Server-Side Filtering (SSR)**: All filters (search, topic, platform, gender) are applied on the server for the initial page load, ensuring only relevant data is sent to the client. This leverages SSR for efficient backend data processing.
-- **Optimistic UI Updates (Client-Side)**: When users like/unlike influencers, the UI updates instantly on the client for a smooth experience, while the server is updated in the background.
+- **Server-Side Filtering & Pagination**: All filtering, search, and pagination logic runs on the server through PostgreSQL queries via Prisma. Initial page loads use Server-Side Rendering (SSR) with filters applied from URL parameters. When users interact with filters or pagination, the client calls server API routes that perform the same database queries, ensuring consistent server-side processing throughout.
+- **Hybrid SSR/CSR Rendering**: Initial page load delivers fully rendered HTML with data via SSR. Subsequent interactions use Client-Side Rendering (CSR) for instant UI feedback without full page reloads, while still processing all data operations on the server.
+- **Smart Data Fetching**: Eliminated duplicate data fetches by detecting initial mount state. On page refresh, only SSR data is used; API calls are made only when users actively filter or paginate.
+- **Adaptive Loading States**: Skeleton screens display for a minimum of 800ms to ensure smooth, non-jarring transitions. The timing adapts based on actual data fetch duration for optimal UX.
+- **Route Protection with Middleware**: NextAuth middleware secures all routes (except login and auth endpoints) at the edge, preventing unauthorized access before pages even render.
+- **Database Query Optimization**: Prisma queries use field selection to fetch only required data. Card views receive 7 fields (`InfluencerSummary`), while detail modals fetch all 12 fields (`Influencer`), reducing payload size by ~40%.
+- **Optimistic UI Updates**: Favorite actions update the UI instantly on the client while the database syncs in the background, providing immediate user feedback.
 - **Image Optimization**: Avatar placeholders are generated on the fly, requiring no external image hosting and ensuring fast, consistent rendering.
 - **Tailwind CSS**: Only the CSS classes used in the project are included in the final build, minimizing CSS size and improving load times.
 

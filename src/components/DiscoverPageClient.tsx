@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Influencer } from "@/lib/influencers";
+import { Influencer, InfluencerSummary } from "@/lib/influencers";
 import { InfluencerCard } from "@/components/InfluencerCard";
-import { InfluencerDetailModal } from "@/components/InfluencerDetailModal";
+import InfluencerDetailModal from "@/components/InfluencerDetailModal";
 import { SearchAndFilter } from "@/components/SearchAndFilter";
 import { Pagination } from "@/components/Pagination";
+import { FilterBadge } from "@/components/FilterBadge";
+import { InfluencerCardSkeleton } from "@/components/InfluencerCardSkeleton";
 
 interface DiscoverPageClientProps {
   initialInfluencers: Influencer[];
@@ -44,7 +46,9 @@ export function DiscoverPageClient({
   const [favorites, setFavorites] = useState<Set<string>>(initialFavorites);
   const [selectedInfluencer, setSelectedInfluencer] = useState<Influencer | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isDetailLoading, setIsDetailLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const loadingTimeout = useRef<NodeJS.Timeout | null>(null);
 
   const [search, setSearch] = useState(initialSearch);
   const [debouncedSearch, setDebouncedSearch] = useState(initialSearch);
@@ -53,6 +57,7 @@ export function DiscoverPageClient({
   const [selectedGender, setSelectedGender] = useState(initialGender);
   const [currentPage, setCurrentPage] = useState(initialPage);
   const [pages, setPages] = useState(totalPages);
+  const isInitialMount = useRef(true);
 
   // Sync state with URL params when navigating
   useEffect(() => {
@@ -75,7 +80,7 @@ export function DiscoverPageClient({
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(search);
-    }, 1200);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, [search]);
@@ -94,8 +99,18 @@ export function DiscoverPageClient({
 
   // Fetch influencers when filters change
   useEffect(() => {
+    // Skip fetch on initial mount - use SSR data
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     const loadInfluencers = async () => {
       setIsLoading(true);
+      if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
+      
+      const startTime = Date.now();
+      
       try {
         const params = new URLSearchParams({
           page: currentPage.toString(),
@@ -108,17 +123,28 @@ export function DiscoverPageClient({
         const response = await fetch(`/api/influencers?${params.toString()}`);
         if (response.ok) {
           const result = await response.json();
-          setInfluencers(result.data);
-          setPages(result.totalPages);
+          
+          // Calculate remaining time to show skeleton (minimum 800ms)
+          const elapsedTime = Date.now() - startTime;
+          const remainingTime = Math.max(0, 800 - elapsedTime);
+          
+          loadingTimeout.current = setTimeout(() => {
+            setInfluencers(result.data);
+            setPages(result.totalPages);
+            setIsLoading(false);
+          }, remainingTime);
         }
       } catch (error) {
         console.error("Error loading influencers:", error);
-      } finally {
         setIsLoading(false);
       }
     };
 
     loadInfluencers();
+    // Cleanup timeout on unmount
+    return () => {
+      if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
+    };
   }, [currentPage, debouncedSearch, selectedTopic, selectedPlatform, selectedGender]);
 
   // Reset to page 1 when filters change
@@ -137,10 +163,6 @@ export function DiscoverPageClient({
           newFavorites.delete(influencerId);
           setFavorites(newFavorites);
           onFavoritesCountChange?.(newFavorites.size);
-          if (selectedInfluencer?.id === influencerId) {
-            setSelectedInfluencer(null);
-            setIsDetailModalOpen(false);
-          }
         }
       } else {
         const response = await fetch("/api/favorites", {
@@ -160,9 +182,26 @@ export function DiscoverPageClient({
     }
   };
 
-  const handleViewDetails = (influencer: Influencer) => {
-    setSelectedInfluencer(influencer);
+  const handleViewDetails = async (influencer: InfluencerSummary) => {
+    setIsDetailLoading(true);
     setIsDetailModalOpen(true);
+    try {
+      const response = await fetch(`/api/influencers/${influencer.id}`, {
+        credentials: 'include',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedInfluencer(data);
+      } else {
+        console.error('Failed to fetch influencer details:', response.status, response.statusText);
+        setSelectedInfluencer(null);
+      }
+    } catch (error) {
+      console.error('Error fetching influencer details:', error);
+      setSelectedInfluencer(null);
+    } finally {
+      setIsDetailLoading(false);
+    }
   };
 
   const handleReset = () => {
@@ -192,25 +231,79 @@ export function DiscoverPageClient({
           isLoading={isLoading}
         />
 
-        <div className="mb-4 text-sm text-gray-600 min-h-5">
-          {!isLoading && influencers.length > 0 && (
-            <>Showing {influencers.length} influencers (Page {currentPage} of {pages})</>
+        <div className="mb-4 flex justify-between items-center min-h-8">
+          <div className="text-sm text-gray-600">
+            {!isLoading && influencers.length > 0 && (
+              <>Showing {influencers.length} influencers (Page {currentPage} of {pages})</>
+            )}
+          </div>
+
+          {/* Active Filters */}
+          {(debouncedSearch || selectedTopic || selectedPlatform || selectedGender) && (
+            <div className="flex flex-wrap items-center gap-2">
+              {debouncedSearch && (
+                <FilterBadge
+                  label="Search"
+                  value={debouncedSearch}
+                  onRemove={() => setSearch("")}
+                  color="blue"
+                />
+              )}
+              
+              {selectedTopic && (
+                <FilterBadge
+                  label="Topic"
+                  value={selectedTopic}
+                  onRemove={() => setSelectedTopic("")}
+                  color="purple"
+                />
+              )}
+              
+              {selectedPlatform && (
+                <FilterBadge
+                  label="Platform"
+                  value={selectedPlatform}
+                  onRemove={() => setSelectedPlatform("")}
+                  color="green"
+                />
+              )}
+              
+              {selectedGender && (
+                <FilterBadge
+                  label="Gender"
+                  value={selectedGender.charAt(0) + selectedGender.slice(1).toLowerCase().replace('_', '-')}
+                  onRemove={() => setSelectedGender("")}
+                  color="pink"
+                />
+              )}
+              
+              {/* Clear All Button - show when more than 1 filter is active */}
+              {[debouncedSearch, selectedTopic, selectedPlatform, selectedGender].filter(Boolean).length > 1 && (
+                <button
+                  onClick={handleReset}
+                  className="inline-flex items-center gap-1 cursor-pointer bg-red-100 text-red-http://localhost:3000/ text-sm font-medium px-3 py-1 rounded-full hover:bg-red-200 transition-colors"
+                >
+                  Clear All 
+                </button>
+              )}
+            </div>
           )}
         </div>
 
-        {isLoading && influencers.length === 0 ? (
-          <div className="flex items-center justify-center py-12">
-            <div className="text-center">
-              <div className="mb-4 text-4xl">⏳</div>
-              <p className="text-gray-600">Loading influencers...</p>
-            </div>
+        {isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <InfluencerCardSkeleton key={i} />
+            ))}
           </div>
-        ) : influencers.length === 0 ? (
+        )}
+        {!isLoading && influencers.length === 0 && (
           <div className="bg-white rounded-lg shadow-md p-12 text-center">
             <div className="mb-4 text-5xl">🔍</div>
             <p className="text-gray-600 text-lg">No influencers found matching your criteria.</p>
           </div>
-        ) : (
+        )}
+        {!isLoading && influencers.length > 0 && (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
               {influencers.map((influencer) => (
@@ -224,7 +317,6 @@ export function DiscoverPageClient({
                 />
               ))}
             </div>
-
             {pages > 1 && (
               <Pagination
                 currentPage={currentPage}
@@ -246,7 +338,7 @@ export function DiscoverPageClient({
         }}
         isFavorited={selectedInfluencer ? favorites.has(selectedInfluencer.id) : false}
         onFavoriteClick={handleFavoriteClick}
-        isLoading={isLoading}
+        isLoading={isDetailLoading}
       />
     </>
   );

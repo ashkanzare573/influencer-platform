@@ -30,23 +30,21 @@ export default async function HomePage({
     redirect("/login");
   }
 
-  // Await searchParams
   const params = await searchParams;
 
-  // Parse search params
   const search = params.search || "";
   const selectedTopic = params.topic || "";
   const selectedPlatform = params.platform || "";
   const selectedGender = params.gender || "";
   const currentPage = parseInt(params.page || "1", 10);
 
-  // Get filter options
-  const topics = getUniqueTopics();
-  const platforms = getUniquePlatforms();
-  const genders = getUniqueGenders();
+  // Get filter options from database
+  const topics = await getUniqueTopics();
+  const platforms = await getUniquePlatforms();
+  const genders = await getUniqueGenders();
 
-  // Filter and paginate influencers
-  const filtered = filterInfluencers({
+  // Filter and paginate influencers from database
+  const filtered = await filterInfluencers({
     search,
     topic: selectedTopic || undefined,
     platform: selectedPlatform || undefined,

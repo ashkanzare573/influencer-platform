@@ -1,6 +1,7 @@
 "use client";
 
 import { Influencer } from "@/lib/influencers";
+import InfluencerDetailModalSkeleton from "./InfluencerDetailModalSkeleton";
 
 interface InfluencerDetailModalProps {
   influencer: Influencer | null;
@@ -11,7 +12,7 @@ interface InfluencerDetailModalProps {
   isLoading: boolean;
 }
 
-export function InfluencerDetailModal({
+export default function InfluencerDetailModal({
   influencer,
   isOpen,
   onClose,
@@ -19,7 +20,27 @@ export function InfluencerDetailModal({
   onFavoriteClick,
   isLoading,
 }: InfluencerDetailModalProps) {
-  if (!isOpen || !influencer) return null;
+  if (!isOpen) return null;
+
+  if (isLoading) {
+    return <InfluencerDetailModalSkeleton />;
+  }
+
+  if (!influencer) {
+    return (
+      <div className="fixed inset-0 bg-black/40 bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg max-w-md w-full p-8 flex flex-col items-center">
+          <p className="text-gray-700 text-center">Failed to load influencer details.</p>
+          <button
+            className="mt-6 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            onClick={onClose}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div 
@@ -61,8 +82,8 @@ export function InfluencerDetailModal({
             </div>
             <div className="bg-purple-50 p-4 rounded-lg">
               <p className="text-gray-600 text-sm font-medium">Gender</p>
-              <p className="text-2xl font-bold text-purple-600 capitalize">
-                {influencer.gender}
+              <p className="text-2xl font-bold text-purple-600">
+                {influencer.gender ? influencer.gender.charAt(0) + influencer.gender.slice(1).toLowerCase().replace('_', '-') : ''}
               </p>
             </div>
           </div>
@@ -74,7 +95,7 @@ export function InfluencerDetailModal({
               <div className="border border-gray-200 p-4 rounded-lg">
                 <p className="text-gray-600 text-sm">Followers</p>
                 <p className="text-3xl font-bold text-gray-900">
-                  {(influencer.followers / 1000).toFixed(0)}K
+                  {((influencer.followers ?? 0) / 1000).toFixed(0)}K
                 </p>
               </div>
               <div className="border border-gray-200 p-4 rounded-lg">
@@ -84,7 +105,7 @@ export function InfluencerDetailModal({
               <div className="border border-gray-200 p-4 rounded-lg">
                 <p className="text-gray-600 text-sm">Avg Likes</p>
                 <p className="text-3xl font-bold text-gray-900">
-                  {(influencer.avgLikes / 1000).toFixed(1)}K
+                  {((influencer.avgLikes ?? 0) / 1000).toFixed(1)}K
                 </p>
               </div>
               <div className="border border-gray-200 p-4 rounded-lg">

@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Influencer } from "@/lib/influencers";
+import { InfluencerSummary } from "@/lib/influencers";
 
 interface InfluencerCardProps {
-  influencer: Influencer;
+  influencer: InfluencerSummary;
   isFavorited: boolean;
   onFavoriteClick: (influencerId: string) => Promise<void>;
-  onViewDetails: (influencer: Influencer) => void;
+  onViewDetails: (influencer: InfluencerSummary) => void;
   isLoading: boolean;
 }
 
@@ -52,7 +52,7 @@ export function InfluencerCard({
           <div className="bg-blue-50 p-2 rounded">
             <p className="text-gray-600">Followers</p>
             <p className="font-semibold text-blue-600">
-              {(influencer.followers / 1000).toFixed(0)}K
+              {((influencer.followers ?? 0) / 1000).toFixed(0)}K
             </p>
           </div>
           <div className="bg-purple-50 p-2 rounded">
@@ -64,7 +64,7 @@ export function InfluencerCard({
         {/* Topics */}
         <div className="mb-4">
           <div className="flex flex-wrap gap-1">
-            {influencer.topics.slice(0, 3).map((topic, index) => (
+            {influencer.topics.slice(0, 3).map((topic: string, index: number) => (
               <span
                 key={`${topic}-${index}`}
                 className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
@@ -99,7 +99,7 @@ export function InfluencerCard({
             disabled={isLoading || isFavoritingLoading}
             title={isFavorited ? "Remove from favorites" : "Add to favorites"}
           >
-            {isFavoritingLoading ? "..." : isFavorited ? "❤️" : "🤍"}
+            {isFavoritingLoading ? "" : isFavorited ? "❤️" : "🤍"}
           </button>
         </div>
       </div>

@@ -1,78 +1,32 @@
-import influencersData from "@/data/influencers.json";
+import { prisma } from "./prisma";
+import { Gender } from "@prisma/client";
 
-export type Influencer = (typeof influencersData)[0];
+// Summary data for cards (list view)
+export interface InfluencerSummary {
+  id: string;
+  name: string;
+  location?: string | null;
+  followers?: number | null;
+  engagementRate?: number | null;
+  platform: string[];
+  topics: string[];
+}
 
-export const getAllInfluencers = (): Influencer[] => {
-  return influencersData;
-};
-
-export const getInfluencerById = (id: string): Influencer | undefined => {
-  return influencersData.find((influencer) => influencer.id === id);
-};
-
-export const getUniqueTopics = (): string[] => {
-  const topics = new Set<string>();
-  influencersData.forEach((influencer) => {
-    influencer.topics.forEach((topic) => topics.add(topic));
-  });
-  return Array.from(topics).sort();
-};
-
-export const getUniquePlatforms = (): string[] => {
-  const platforms = new Set<string>();
-  influencersData.forEach((influencer) => {
-    influencer.platform.forEach((plat) => platforms.add(plat));
-  });
-  return Array.from(platforms).sort();
-};
-
-export const getUniqueGenders = (): string[] => {
-  const genders = new Set<string>();
-  influencersData.forEach((influencer) => {
-    genders.add(influencer.gender);
-  });
-  return Array.from(genders).sort();
-};
+// Full data for detail view
+export interface Influencer extends InfluencerSummary {
+  email?: string | null;
+  age?: number | null;
+  gender?: string | null;
+  avgLikes?: number | null;
+  avgComments?: number | null;
+}
 
 export interface FilterOptions {
   search?: string;
   topic?: string;
   platform?: string;
   gender?: string;
-  page?: number;
-  limit?: number;
 }
-
-export const filterInfluencers = (options: FilterOptions): Influencer[] => {
-  let filtered = [...influencersData];
-
-  if (options.search) {
-    const searchLower = options.search.toLowerCase();
-    filtered = filtered.filter(
-      (influencer) =>
-        influencer.name.toLowerCase().includes(searchLower) ||
-        influencer.location.toLowerCase().includes(searchLower)
-    );
-  }
-
-  if (options.topic) {
-    filtered = filtered.filter((influencer) =>
-      influencer.topics.includes(options.topic!)
-    );
-  }
-
-  if (options.platform) {
-    filtered = filtered.filter((influencer) =>
-      influencer.platform.includes(options.platform!)
-    );
-  }
-
-  if (options.gender) {
-    filtered = filtered.filter((influencer) => influencer.gender === options.gender);
-  }
-
-  return filtered;
-};
 
 export interface PaginatedResult<T> {
   data: T[];
@@ -84,11 +38,156 @@ export interface PaginatedResult<T> {
   hasPrevPage: boolean;
 }
 
-export const paginateResults = <T>(
+// Get all influencers from database with their relations
+
+export async function getAllInfluencers(): Promise<Influencer[]> {
+  const influencers = await prisma.influencer.findMany({
+    include: {
+      platforms: {
+        include: {
+          platform: true,
+        },
+      },
+      topics: {
+        include: {
+          topic: true,
+        },
+      },
+    },
+  });
+
+  return influencers.map((inf) => ({
+    id: inf.id,
+    name: inf.name,
+    email: inf.email,
+    location: inf.location,
+    age: inf.age,
+    gender: inf.gender,
+    followers: inf.followers,
+    engagementRate: inf.engagementRate,
+    avgLikes: inf.avgLikes,
+    avgComments: inf.avgComments,
+    platform: inf.platforms.map((p) => p.platform.name),
+    topics: inf.topics.map((t) => t.topic.name),
+  }));
+}
+
+// Get influencer by ID
+export async function getInfluencerById(
+  id: string
+): Promise<Influencer | null> {
+  const influencer = await prisma.influencer.findUnique({
+    where: { id },
+    include: {
+      platforms: {
+        include: {
+          platform: true,
+        },
+      },
+      topics: {
+        include: {
+          topic: true,
+        },
+      },
+    },
+  });
+
+  if (!influencer) return null;
+
+  return {
+    id: influencer.id,
+    name: influencer.name,
+    email: influencer.email,
+    location: influencer.location,
+    age: influencer.age,
+    gender: influencer.gender,
+    followers: influencer.followers,
+    engagementRate: influencer.engagementRate,
+    avgLikes: influencer.avgLikes,
+    avgComments: influencer.avgComments,
+    platform: influencer.platforms.map((p) => p.platform.name),
+    topics: influencer.topics.map((t) => t.topic.name),
+  };
+}
+
+/**
+ * Filter influencers
+ */
+export async function filterInfluencers(
+  options: FilterOptions
+): Promise<Influencer[]> {
+  const { search, topic, platform, gender } = options;
+
+  const where: any = {};
+
+  if (search) {
+    where.OR = [
+      { name: { contains: search, mode: "insensitive" } },
+      { location: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  if (gender) {
+    where.gender = gender;
+  }
+
+  if (topic) {
+    where.topics = {
+      some: {
+        topic: {
+          name: topic,
+        },
+      },
+    };
+  }
+
+  if (platform) {
+    where.platforms = {
+      some: {
+        platform: {
+          name: platform,
+        },
+      },
+    };
+  }
+
+  const influencers = await prisma.influencer.findMany({
+    where,
+    include: {
+      platforms: {
+        include: {
+          platform: true,
+        },
+      },
+      topics: {
+        include: {
+          topic: true,
+        },
+      },
+    },
+  });
+
+  return influencers.map((inf) => ({
+    id: inf.id,
+    name: inf.name,
+    email: inf.email,
+    location: inf.location,
+    age: inf.age,
+    gender: inf.gender,
+    followers: inf.followers,
+    engagementRate: inf.engagementRate,
+    avgLikes: inf.avgLikes,
+    avgComments: inf.avgComments,
+    platform: inf.platforms.map((p) => p.platform.name),
+    topics: inf.topics.map((t) => t.topic.name),
+  }));
+}
+
+export function paginateResults<T>(
   items: T[],
   page: number = 1,
-  pageSize: number = 10
-): PaginatedResult<T> => {
+  pageSize: number = 12
+): PaginatedResult<T> {
   const total = items.length;
   const totalPages = Math.ceil(total / pageSize);
   const start = (page - 1) * pageSize;
@@ -104,4 +203,34 @@ export const paginateResults = <T>(
     hasNextPage: page < totalPages,
     hasPrevPage: page > 1,
   };
-};
+}
+
+// Get unique topics from database
+export async function getUniqueTopics(): Promise<string[]> {
+  const topics = await prisma.topic.findMany({
+    orderBy: { name: "asc" },
+  });
+  return topics.map((t) => t.name);
+}
+
+// Get unique platforms from database
+export async function getUniquePlatforms(): Promise<string[]> {
+  const platforms = await prisma.platform.findMany({
+    orderBy: { name: "asc" },
+  });
+  return platforms.map((p) => p.name);
+}
+
+// Get unique genders from database
+export async function getUniqueGenders(): Promise<string[]> {
+  const genders = await prisma.influencer.findMany({
+    where: { gender: { not: null } },
+    select: { gender: true },
+    distinct: ["gender"],
+    orderBy: { gender: "asc" },
+  });
+  return genders
+    .map((g) => g.gender as Gender)
+    .filter((g): g is Gender => g !== null)
+    .map((g) => g as string);
+}

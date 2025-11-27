@@ -15,27 +15,39 @@ interface HeaderProps {
 export function Header({
   favoritesCount,
   userNameOrEmail,
-  className = "bg-linear-to-r from-blue-500 to-gray-700 text-white shadow-lg",
-  title = <Link href="/" className="text-3xl font-bold hover:opacity-80 transition-opacity">Influencer Platform</Link>,
-  subtitle = <p className="text-blue-100 text-sm mt-1">Discover and manage your favorite influencers</p>,
+  className = "bg-linear-to-r from-blue-500 to-gray-700 text-white shadow-lg pb-4",
+  title = (
+    <Link
+      href="/"
+      className="text-3xl font-bold hover:opacity-80 transition-opacity"
+    >
+      Influencer Platform
+    </Link>
+  ),
+  subtitle = (
+    <p className="text-blue-100 text-sm mt-1 max-sm:max-w-[200px]">
+      Discover and manage your favorite influencers
+    </p>
+  ),
   rightContent,
 }: HeaderProps) {
   return (
     <header className={className}>
-      <div className="max-w-7xl mx-auto px-4 py-6 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 py-6 flex sm:items-center justify-between">
         <div>
           {title}
           {subtitle}
         </div>
         {rightContent ?? (
-          <div className="flex items-start sm:items-center max-sm:flex-col gap-4">
+          <div className="flex sm:items-center max-sm:flex-col gap-4">
             <Link
               href="/favorites"
               className="px-4 py-2 bg-white/20 hover:bg-white/30 max-sm:text-sm rounded-lg transition-colors"
             >
-            <span className="max-sm:hidden">❤️</span> Favorites ({favoritesCount})
+              <span className="max-sm:hidden">❤️</span> Favorites (
+              {favoritesCount})
             </Link>
-            <div className="text-sm">
+            <div className="text-sm max-sm:hidden">
               <p>Welcome, {userNameOrEmail}!</p>
             </div>
             <button
@@ -46,6 +58,9 @@ export function Header({
             </button>
           </div>
         )}
+      </div>
+      <div className="text-sm sm:hidden px-4">
+        <p>Welcome, {userNameOrEmail}!</p>
       </div>
     </header>
   );

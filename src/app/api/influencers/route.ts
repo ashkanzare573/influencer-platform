@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const pageSize = 12;
 
-    const filtered = filterInfluencers({
+    const filtered = await filterInfluencers({
       search,
       topic: topic || undefined,
       platform: platform || undefined,

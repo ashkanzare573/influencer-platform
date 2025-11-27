@@ -8,18 +8,27 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
     const favorites = await prisma.favorite.findMany({
-      where: { userId: session.user.id },
+      where: { userId: user.id },
       orderBy: { createdAt: "desc" },
     });
 
-    const favoriteInfluencers = favorites
-      .map((fav: any) => getInfluencerById(fav.influencerId))
-      .filter((inf: any) => inf !== undefined);
+    const favoritePromises = favorites.map((fav) => getInfluencerById(fav.influencerId));
+    const favoriteInfluencers = (await Promise.all(favoritePromises)).filter(
+      (inf): inf is Exclude<typeof inf, null> => inf !== null
+    );
 
     return NextResponse.json(favoriteInfluencers);
   } catch (error) {
@@ -35,8 +44,16 @@ export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
 
-    if (!session?.user?.id) {
+    if (!session?.user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const { influencerId } = await request.json();
@@ -48,7 +65,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const influencer = getInfluencerById(influencerId);
+    const influencer = await getInfluencerById(influencerId);
     if (!influencer) {
       return NextResponse.json(
         { error: "Influencer not found" },
@@ -58,7 +75,7 @@ export async function POST(request: NextRequest) {
 
     const favorite = await prisma.favorite.create({
       data: {
-        userId: session.user.id,
+        userId: user.id,
         influencerId,
       },
     });
