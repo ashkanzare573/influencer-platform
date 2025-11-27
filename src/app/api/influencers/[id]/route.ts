@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { requireSession } from "@/lib/session";
 import { getInfluencerById } from "@/lib/influencers";
 
 export async function GET(
@@ -8,10 +7,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { session, response } = await requireSession();
+    if (response) return response;
+    
     const { id } = await params;
     const influencer = await getInfluencerById(id);
     if (!influencer) {
