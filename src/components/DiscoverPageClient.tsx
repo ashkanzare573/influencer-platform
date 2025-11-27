@@ -231,7 +231,7 @@ export function DiscoverPageClient({
           isLoading={isLoading}
         />
 
-        <div className="mb-4 flex justify-between items-center min-h-8">
+        <div className="mb-4 flex flex-col md:flex-row justify-between items-center min-h-8">
           <div className="text-sm text-gray-600">
             {!isLoading && influencers.length > 0 && (
               <>Showing {influencers.length} influencers (Page {currentPage} of {pages})</>
@@ -240,7 +240,7 @@ export function DiscoverPageClient({
 
           {/* Active Filters */}
           {(debouncedSearch || selectedTopic || selectedPlatform || selectedGender) && (
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 max-md:mt-1">
               {debouncedSearch && (
                 <FilterBadge
                   label="Search"

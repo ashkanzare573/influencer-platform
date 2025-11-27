@@ -77,7 +77,7 @@ export default async function FavoritesPage() {
         rightContent={
           <Link
             href="/"
-            className="px-4 py-2 max-sm:text-sm bg-white text-pink-600 rounded-lg hover:bg-gray-100 transition-colors font-medium"
+            className="px-4 py-2 flex items-center justify-center max-sm:text-sm bg-white text-pink-600 rounded-lg hover:bg-gray-100 transition-colors font-medium"
           >
             ← Back to Discover
           </Link>

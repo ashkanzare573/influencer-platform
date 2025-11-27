@@ -59,9 +59,11 @@ export function Header({
           </div>
         )}
       </div>
-      <div className="text-sm sm:hidden px-4">
-        <p>Welcome, {userNameOrEmail}!</p>
-      </div>
+      {!rightContent && (
+        <div className="text-sm sm:hidden px-4">
+          <p>Welcome, {userNameOrEmail}!</p>
+        </div>
+      )}
     </header>
   );
 }
