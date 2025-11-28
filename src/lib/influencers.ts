@@ -111,11 +111,11 @@ export async function getInfluencerById(
 }
 
 /**
- * Filter influencers
+ * Filter influencers - Returns summary data for list views (optimized)
  */
 export async function filterInfluencers(
   options: FilterOptions
-): Promise<Influencer[]> {
+): Promise<InfluencerSummary[]> {
   const { search, topic, platform, gender } = options;
 
   const where: any = {};
@@ -153,15 +153,28 @@ export async function filterInfluencers(
 
   const influencers = await prisma.influencer.findMany({
     where,
-    include: {
+    select: {
+      id: true,
+      name: true,
+      location: true,
+      followers: true,
+      engagementRate: true,
       platforms: {
-        include: {
-          platform: true,
+        select: {
+          platform: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
       topics: {
-        include: {
-          topic: true,
+        select: {
+          topic: {
+            select: {
+              name: true,
+            },
+          },
         },
       },
     },
@@ -170,14 +183,9 @@ export async function filterInfluencers(
   return influencers.map((inf) => ({
     id: inf.id,
     name: inf.name,
-    email: inf.email,
     location: inf.location,
-    age: inf.age,
-    gender: inf.gender,
     followers: inf.followers,
     engagementRate: inf.engagementRate,
-    avgLikes: inf.avgLikes,
-    avgComments: inf.avgComments,
     platform: inf.platforms.map((p) => p.platform.name),
     topics: inf.topics.map((t) => t.topic.name),
   }));

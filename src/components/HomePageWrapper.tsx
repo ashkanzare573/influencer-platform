@@ -3,10 +3,10 @@
 import { useState } from "react";
 import { Header } from "@/components/Header";
 import { DiscoverPageClient } from "@/components/DiscoverPageClient";
-import { Influencer } from "@/lib/influencers";
+import { InfluencerSummary } from "@/lib/influencers";
 
 interface HomePageWrapperProps {
-  initialInfluencers: Influencer[];
+  initialInfluencers: InfluencerSummary[];
   initialFavorites: Set<string>;
   topics: string[];
   platforms: string[];

@@ -11,7 +11,7 @@ import { FilterBadge } from "@/components/FilterBadge";
 import { InfluencerCardSkeleton } from "@/components/InfluencerCardSkeleton";
 
 interface DiscoverPageClientProps {
-  initialInfluencers: Influencer[];
+  initialInfluencers: InfluencerSummary[];
   initialFavorites: Set<string>;
   topics: string[];
   platforms: string[];
@@ -42,7 +42,7 @@ export function DiscoverPageClient({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [influencers, setInfluencers] = useState<Influencer[]>(initialInfluencers);
+  const [influencers, setInfluencers] = useState<InfluencerSummary[]>(initialInfluencers);
   const [favorites, setFavorites] = useState<Set<string>>(initialFavorites);
   const [selectedInfluencer, setSelectedInfluencer] = useState<Influencer | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
@@ -106,6 +106,9 @@ export function DiscoverPageClient({
     }
 
     const loadInfluencers = async () => {
+      // Scroll to top on page change
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      
       setIsLoading(true);
       if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
       
