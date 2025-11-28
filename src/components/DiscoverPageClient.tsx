@@ -106,9 +106,6 @@ export function DiscoverPageClient({
     }
 
     const loadInfluencers = async () => {
-      // Scroll to top on page change
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      
       setIsLoading(true);
       if (loadingTimeout.current) clearTimeout(loadingTimeout.current);
       
@@ -135,6 +132,9 @@ export function DiscoverPageClient({
             setInfluencers(result.data);
             setPages(result.totalPages);
             setIsLoading(false);
+            
+            // Scroll to top after data is loaded and rendered
+            window.scrollTo({ top: 0, behavior: 'smooth' });
           }, remainingTime);
         }
       } catch (error) {
